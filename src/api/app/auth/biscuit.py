@@ -5,7 +5,7 @@ from typing import Optional
 from datetime import datetime, timezone, timedelta
 
 from fastapi import HTTPException, Request
-from biscuit_auth import Authorizer, Biscuit, BiscuitValidationError, Check, Policy, PublicKey, AuthorizationError, Fact
+from biscuit_auth import AuthorizerBuilder, Biscuit, BiscuitValidationError, Check, Policy, PublicKey, AuthorizationError, Fact
 
 from common_utils import get_version  # type: ignore
 
@@ -396,10 +396,10 @@ class BiscuitGuard:
 
     def _load_public_key(self) -> None:
         try:
-            hex_key = BISCUIT_PUBLIC_KEY_FILE.read_text(encoding="utf-8").strip()
+            hex_key = BISCUIT_PUBLIC_KEY_FILE.read_text().strip()
             if not hex_key:
                 raise ValueError("Biscuit public key file is empty")
-            self._public_key = PublicKey.from_hex(hex_key)
+            self._public_key = PublicKey(hex_key)
             self._logger.debug("Biscuit public key loaded successfully")
         except Exception as e:
             with suppress(Exception):
@@ -439,8 +439,7 @@ class BiscuitGuard:
 
         # Phase 1: freshness and IP binding
         try:
-            az = Authorizer()
-            az.add_token(token)
+            az = AuthorizerBuilder()
             az.add_check(Check(f'check if version("{get_version()}")'))
             # Enforce token issuance time not older than configured TTL
             try:
@@ -462,7 +461,7 @@ class BiscuitGuard:
 
             az.add_policy(Policy("allow if true"))
             self._logger.debug("Biscuit phase1: authorizing freshness/IP checks")
-            az.authorize()
+            az.build(token).authorize()
             self._logger.debug("Biscuit phase1: authorization success")
         except AuthorizationError:
             self._logger.debug(f"Biscuit phase1: authorization failed (AuthorizationError):\n{format_exc()}")
@@ -473,8 +472,7 @@ class BiscuitGuard:
 
         # Phase 2: route authorization (coarse and fine-grained)
         try:
-            az = Authorizer()
-            az.add_token(token)
+            az = AuthorizerBuilder()
 
             # Always add operation fact for observability
             operation = OPERATION_BY_METHOD.get(request.method.upper(), "read")
@@ -504,7 +502,7 @@ class BiscuitGuard:
                 self._logger.debug("Biscuit phase2: fallback to coarse role-based authorization")
 
             self._logger.debug("Biscuit phase2: authorizing route access")
-            az.authorize()
+            az.build(token).authorize()
             self._logger.debug("Biscuit phase2: authorization success")
         except AuthorizationError:
             self._logger.debug(f"Biscuit phase2: authorization failed (AuthorizationError):\n{format_exc()}")

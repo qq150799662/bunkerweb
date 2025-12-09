@@ -1,13 +1,13 @@
 from contextlib import suppress
 from os import sep
 from os.path import join
+from re import split
 from sys import path as sys_path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from traceback import format_exc
 from ipaddress import ip_address, ip_network, IPv4Network, IPv6Network
-import re
 
 for deps_path in [join(sep, "usr", "share", "bunkerweb", *paths) for paths in (("deps", "python"), ("utils",), ("api",), ("db",))]:
     if deps_path not in sys_path:
@@ -43,7 +43,7 @@ def create_app() -> FastAPI:
     if api_config.whitelist_enabled:
         raw_whitelist = api_config.API_WHITELIST_IPS.strip()
         if raw_whitelist:
-            for tok in re.split(r"[\s,]+", raw_whitelist):
+            for tok in split(r"[\s,]+", raw_whitelist):
                 if not tok:
                     continue
                 try:
