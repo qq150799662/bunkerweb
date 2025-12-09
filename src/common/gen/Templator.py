@@ -37,48 +37,80 @@ class ConfigurableCustomUndefined(Undefined):
         """Set the configuration dictionary for this class."""
         cls._config_dict = config_dict
 
+    def _get_env(self) -> Optional[Environment]:
+        """Safely retrieve the Jinja environment without triggering __getattr__."""
+        with suppress(Exception):
+            return object.__getattribute__(self, "_undefined_env")
+        return None
+
+    def _get_undefined_name(self) -> Optional[str]:
+        """Safely retrieve the undefined name without triggering __getattr__."""
+        with suppress(Exception):
+            return object.__getattribute__(self, "_undefined_name")
+        return None
+
+    def _get_config_dict(self) -> Dict[str, Any]:
+        """Resolve the configuration dict from the Jinja env or the class variable.
+
+        Passing the env around keeps defaults available when the class is re-imported
+        in child processes (e.g. when using ProcessPool with spawn).
+        """
+        env = self._get_env()
+        if env is not None:
+            config_from_env = getattr(env, "bunker_default_config", None)
+            if config_from_env is not None:
+                return config_from_env
+        return self._config_dict
+
     def __getattr__(self, name: str) -> Any:
+        config_dict = self._get_config_dict()
+        undefined_name = self._get_undefined_name()
+
         # First check if the original undefined name exists in config_dict
-        if self._undefined_name and self._undefined_name in self._config_dict:
-            base_value = self._config_dict[self._undefined_name]
+        if undefined_name and undefined_name in config_dict:
+            base_value = config_dict[undefined_name]
             if hasattr(base_value, name):
                 return getattr(base_value, name)
 
         # Check if the attribute access creates a valid config key
-        if self._undefined_name:
-            attr_key = f"{self._undefined_name}.{name}"
+        if undefined_name:
+            attr_key = f"{undefined_name}.{name}"
         else:
             attr_key = name
 
-        if attr_key in self._config_dict:
-            return self._config_dict[attr_key]
+        if attr_key in config_dict:
+            return config_dict[attr_key]
 
         # Return a new instance for chaining
-        return self.__class__(name=attr_key)
+        return self.__class__(name=attr_key, env=self._get_env())
 
     def __getitem__(self, key: str) -> Any:
+        config_dict = self._get_config_dict()
+        undefined_name = self._get_undefined_name()
+
         # First check if the original undefined name exists in config_dict
-        if self._undefined_name and self._undefined_name in self._config_dict:
-            base_value = self._config_dict[self._undefined_name]
+        if undefined_name and undefined_name in config_dict:
+            base_value = config_dict[undefined_name]
             if hasattr(base_value, "__getitem__"):
                 with suppress(KeyError, TypeError, IndexError):
                     return base_value[key]
 
         # Check if the item access creates a valid config key
-        if self._undefined_name:
-            item_key = f"{self._undefined_name}[{key}]"
+        if undefined_name:
+            item_key = f"{undefined_name}[{key}]"
         else:
             item_key = f"[{key}]"
 
-        if item_key in self._config_dict:
-            return self._config_dict[item_key]
+        if item_key in config_dict:
+            return config_dict[item_key]
 
         # Return a new instance for chaining
-        return self.__class__(name=item_key)
+        return self.__class__(name=item_key, env=self._get_env())
 
     def __eq__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 if other == "" and isinstance(value, str):
                     value = value.strip()
@@ -86,8 +118,9 @@ class ConfigurableCustomUndefined(Undefined):
         return super().__eq__(other)
 
     def __ne__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 if other == "" and isinstance(value, str):
                     value = value.strip()
@@ -95,68 +128,77 @@ class ConfigurableCustomUndefined(Undefined):
         return super().__ne__(other)
 
     def __repr__(self) -> str:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 return repr(value)
         return super().__repr__()
 
     def __lt__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 with suppress(TypeError):
                     return value < other
         return super().__lt__(other)
 
     def __le__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 with suppress(TypeError):
                     return value <= other
         return super().__le__(other)
 
     def __gt__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 with suppress(TypeError):
                     return value > other
         return super().__gt__(other)
 
     def __ge__(self, other: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 with suppress(TypeError):
                     return value >= other
         return super().__ge__(other)
 
     def __str__(self) -> str:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 return str(value)
         return super().__str__()
 
     def __len__(self) -> int:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None and hasattr(value, "__len__"):
                 return len(value)
         return super().__len__()
 
     def __iter__(self):
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None and hasattr(value, "__iter__"):
                 return iter(value)
         return super().__iter__()
 
     def __bool__(self) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None:
                 if isinstance(value, str):
                     value = value.strip()
@@ -164,8 +206,9 @@ class ConfigurableCustomUndefined(Undefined):
         return super().__bool__()
 
     def __contains__(self, item: Any) -> bool:
-        if self._undefined_name:
-            value = self._config_dict.get(self._undefined_name)
+        undefined_name = self._get_undefined_name()
+        if undefined_name:
+            value = self._get_config_dict().get(undefined_name)
             if value is not None and hasattr(value, "__contains__"):
                 return item in value
         return False
@@ -247,6 +290,20 @@ class Templator:
             "import": import_module,
         }
 
+    def __getstate__(self):
+        """Drop non-picklable state when sending to worker processes."""
+        state = self.__dict__.copy()
+        state["_jinja_env"] = None
+        return state
+
+    def __setstate__(self, state):
+        """Rebuild the Jinja env in worker processes."""
+        self.__dict__.update(state)
+        self._custom_undefined = create_custom_undefined_class(self._default_config)
+        self._jinja_env = self._load_jinja_env()
+        self.__all_templates = frozenset(self._jinja_env.list_templates())
+        self._categorized_templates = self._categorize_templates()
+
     def render(self) -> None:
         """Render the templates based on the provided configuration."""
         self._render_global()
@@ -255,10 +312,15 @@ class Templator:
             servers = self._config.get("SERVER_NAME", "www.example.com").strip().split(" ")
 
         max_workers = min(ceil(max(1, (cpu_count() or 1) * 0.75)), len(servers))
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            futures = [executor.submit(self._render_server, server) for server in servers]
-            for future in futures:
-                future.result()
+        # Skip multiprocessing when only one site to avoid pickling overhead/issues
+        if max_workers <= 1:
+            for server in servers:
+                self._render_server(server)
+        else:
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                futures = [executor.submit(self._render_server, server) for server in servers]
+                for future in futures:
+                    future.result()
 
     def _load_jinja_env(self) -> Environment:
         """Load the Jinja2 environment with the appropriate search paths.
@@ -268,7 +330,7 @@ class Templator:
         """
         searchpath = [self._templates]
         searchpath.extend(p.as_posix() for p in (*self._core.glob("*/confs"), *self._plugins.glob("*/confs"), *self._pro_plugins.glob("*/confs")) if p.is_dir())
-        return Environment(
+        env = Environment(
             loader=FileSystemLoader(searchpath=searchpath),
             lstrip_blocks=True,
             trim_blocks=True,
@@ -278,6 +340,8 @@ class Templator:
             cache_size=-1,
             undefined=self._custom_undefined,
         )
+        env.bunker_default_config = self._default_config
+        return env
 
     def _categorize_templates(self) -> Dict[str, List[str]]:
         """Pre-categorize templates by context for faster lookup.
@@ -453,6 +517,7 @@ class Templator:
         """
         real_path = Path(self._output, subpath or "", name or template)
         try:
+            env_default_config = self._default_config
             if custom_undefined:
                 temp_env = Environment(
                     loader=self._jinja_env.loader,
@@ -464,8 +529,12 @@ class Templator:
                     cache_size=-1,
                     undefined=custom_undefined,
                 )
+                env_default_config = getattr(custom_undefined, "_config_dict", self._default_config)
+                temp_env.bunker_default_config = env_default_config
                 jinja_template = temp_env.get_template(template)
             else:
+                # Ensure the shared env still carries defaults after pickling in child workers
+                self._jinja_env.bunker_default_config = env_default_config
                 jinja_template = self._jinja_env.get_template(template)
 
             real_path.parent.mkdir(parents=True, exist_ok=True)
