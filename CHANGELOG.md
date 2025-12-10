@@ -12,6 +12,7 @@
 - [FEATURE] Enhance the Antibot plugin to better handle redirection back to the original request path after a successful challenge by checking the `Referer` header, ensuring users are redirected to meaningful content rather than static files or other unintended destinations
 - [BUGFIX] Fix issues with the Ingress controller regarding reverse proxy settings when using multiple paths per rule and a template by adjusting the indexing logic to be configurable via the new `KUBERNETES_REVERSE_PROXY_SUFFIX_START` setting (default is `1` to keep backward compatibility)
 - [BUGFIX] Escape percentage signs in `DATABASE_URI` for Alembic when using the SQLAlchemy URL configuration to prevent formatting errors during migrations
+- [BUGFIX] Fix issues with `Autoconf` controllers persisting old instances after they have been deleted from the orchestrator.
 - [UI] Enhance service configuration handling during edits and renames to ensure consistency and prevent data loss
 - [UI] Enhance session management with Redis support and configurable session lifetime
 - [UI] Renamed "Global Configuration" to "Global Settings" in the web UI for clarity
