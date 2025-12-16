@@ -1634,7 +1634,8 @@ En lugar de pasar configuraciones sensibles a través de variables de entorno, p
 Ejemplo:
 ```bash
 # Crear un secreto de Docker para ADMIN_PASSWORD
-echo "S3cr3tP@ssw0rd" | docker secret create ADMIN_PASSWORD -```
+echo "S3cr3tP@ssw0rd" | docker secret create ADMIN_PASSWORD -
+```
 
 Monta los secretos al desplegar:
 ```yaml
@@ -1655,7 +1656,8 @@ Esto asegura que las configuraciones sensibles se mantengan fuera del entorno y 
 El [programador](concepts.md#scheduler) se ejecuta en su propio contenedor, que también está disponible en Docker Hub:
 
 ```shell
-docker pull bunkerity/bunkerweb-scheduler:1.6.7~rc1```
+docker pull bunkerity/bunkerweb-scheduler:1.6.7~rc1
+```
 
 !!! info "Configuraciones de BunkerWeb"
 

@@ -1662,17 +1662,17 @@ docker pull bunkerity/bunkerweb-scheduler:1.6.7~rc1
 
 !!! info "Paramètres BunkerWeb"
 
-    Since version `1.6.0`, the Scheduler container is where you define the settings for BunkerWeb. The Scheduler then pushes the configuration to the BunkerWeb container.
+    Depuis la version `1.6.0`, le conteneur Scheduler est l’endroit où vous définissez les paramètres de BunkerWeb. Le Scheduler pousse ensuite la configuration vers le conteneur BunkerWeb.
 
     ⚠ **Important**: Tous les paramètres liés à l'API (comme `API_HTTP_PORT`, `API_LISTEN_IP`, `API_SERVER_NAME`, `API_WHITELIST_IP`, et `API_TOKEN` si vous l'utilisez) **doivent également être définis dans le conteneur BunkerWeb**. Les paramètres doivent être répliqués dans les deux conteneurs, sinon le conteneur BunkerWeb n'acceptera pas les requêtes API du Scheduler.
 
     ```yaml
     x-bw-api-env: &bw-api-env
-      # We use an anchor to avoid repeating the same settings for both containers
-      API_HTTP_PORT: "5000" # Default value
-      API_LISTEN_IP: "0.0.0.0" # Default value
-      API_SERVER_NAME: "bwapi" # Default value
-      API_WHITELIST_IP: "127.0.0.0/24 10.20.30.0/24" # Set this according to your network settings
+      # Nous utilisons une ancre pour éviter de répéter les mêmes réglages pour les deux conteneurs
+      API_HTTP_PORT: "5000" # Valeur par défaut
+      API_LISTEN_IP: "0.0.0.0" # Valeur par défaut
+      API_SERVER_NAME: "bwapi" # Valeur par défaut
+      API_WHITELIST_IP: "127.0.0.0/24 10.20.30.0/24" # Adaptez selon votre réseau
       # Jeton optionnel ; si défini, le Scheduler enverra Authorization: Bearer <token>
       API_TOKEN: ""
 
@@ -1680,7 +1680,7 @@ docker pull bunkerity/bunkerweb-scheduler:1.6.7~rc1
       bunkerweb:
         image: bunkerity/bunkerweb:1.6.7~rc1
         environment:
-          # This will set the API settings for the BunkerWeb container
+          # Paramètres API pour le conteneur BunkerWeb
           <<: *bw-api-env
         restart: "unless-stopped"
         networks:
@@ -1689,10 +1689,10 @@ docker pull bunkerity/bunkerweb-scheduler:1.6.7~rc1
       bw-scheduler:
         image: bunkerity/bunkerweb-scheduler:1.6.7~rc1
         environment:
-          # This will set the API settings for the Scheduler container
+          # Paramètres API pour le conteneur Scheduler
           <<: *bw-api-env
         volumes:
-          - bw-storage:/data # This is used to persist the cache and other data like backups
+          - bw-storage:/data # Pour persister le cache et d'autres données comme les sauvegardes
         restart: "unless-stopped"
         networks:
           - bw-universe
@@ -1815,7 +1815,7 @@ Le conteneur UI respecte aussi `TZ` pour localiser les logs et les tâches plani
 
 ### Réseau
 
-Par défaut, le conteneur BunkerWeb écoute (à l'intérieur du conteneur) les **fichiers 8080/tcp** pour **HTTP,** **8443/tcp** pour **HTTPS** et **8443/udp** pour **QUIC**.
+Par défaut, le conteneur BunkerWeb écoute (à l'intérieur du conteneur) sur **8080/tcp** pour **HTTP**, **8443/tcp** pour **HTTPS** et **8443/udp** pour **QUIC**.
 
 !! avertissement "Ports privilégiés en mode rootless ou lors de l'utilisation de Podman"
     Si vous utilisez [Docker en mode rootless](https://docs.docker.com/engine/security/rootless) et que vous souhaitez rediriger les ports privilégiés (< 1024) tels que 80 et 443 vers BunkerWeb, veuillez vous référer aux prérequis [ici](https://docs.docker.com/engine/security/rootless/#exposing-privileged-ports).
