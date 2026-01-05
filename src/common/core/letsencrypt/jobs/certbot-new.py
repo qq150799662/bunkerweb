@@ -7,7 +7,7 @@ from json import loads
 from os import W_OK, access, environ, getenv, sep, umask
 from os.path import join
 from pathlib import Path
-from re import DOTALL, MULTILINE, match, search
+from re import MULTILINE, match, search
 from select import select
 from subprocess import DEVNULL, PIPE, STDOUT, Popen, run
 from sys import exit as sys_exit, path as sys_path
@@ -129,7 +129,7 @@ def format_server_names(names: Set[str]) -> str:
 
 
 def parse_certbot_domains(certificate_block: str) -> str:
-    match = search(r"^(Domains|Identifiers):\\s+(.+?)(?:\\n\\S|\\Z)", certificate_block, MULTILINE | DOTALL)
+    match = search(r"^\\s*(Domains|Identifiers):\\s+(.+)$", certificate_block, MULTILINE)
     if not match:
         return ""
     return " ".join(match.group(2).split()).replace(" ", ",")
