@@ -3,6 +3,7 @@
 ## v1.6.7~rc2 - 2026/01/??
 
 - [BUGFIX] Fix wrong certificate name checks in Let's Encrypt
+- [BUGFIX] Fix issues with Let's Encrypt's HTTP challenge on Linux HA integrations
 - [LINUX] Updated NGINX version to v1.28.1 for Fedora 42 and 43 integration
 - [ALL-IN-ONE] Update CrowdSec version to 1.7.4
 - [DEPS] Updated luajit2 version to v2.1-20251229
