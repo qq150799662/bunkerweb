@@ -4,6 +4,7 @@
 
 - [BUGFIX] Fix wrong modsecurity reason data under heavy load
 - [UI] Restrict flash messages containing sensitive information to authenticated users only
+- [UI] Enhance breadcrumb navigation and filtering on custom configuration pages for improved user experience
 - [DEPS] Updated Modsecurity nginx connector version to 1.0.4
 
 ## v1.6.7~rc2 - 2026/01/??
