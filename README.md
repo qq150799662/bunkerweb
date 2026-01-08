@@ -259,8 +259,8 @@ List of supported Linux distros:
 - Debian 13 "Trixie"
 - Ubuntu 22.04 "Jammy"
 - Ubuntu 24.04 "Noble"
-- Fedora 41
 - Fedora 42
+- Fedora 43
 - RHEL 8.10
 - RHEL 9.6
 - RHEL 10.0
