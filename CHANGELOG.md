@@ -3,9 +3,13 @@
 ## v1.6.7 - 2026/01/??
 
 - [BUGFIX] Fix wrong modsecurity reason data under heavy load
+- [FEATURE] Enhance SSL/TLS negotiation by implementing dynamic ECDH curve resolution, enabling more flexible and secure key exchange configurations in preparation for post-quantum cryptography (X25519MLKEM768) with OpenSSL 3.5+
 - [UI] Restrict flash messages containing sensitive information to authenticated users only
 - [UI] Enhance breadcrumb navigation and filtering on custom configuration pages for improved user experience
+- [LINUX] Drop support of Fedora 41
+- [DOCS] Add Easy Resolve PRO plugin video tutorial link to the documentation
 - [DEPS] Updated Modsecurity nginx connector version to 1.0.4
+- [DEPS] Updated NGINX version to v1.28.1 for all integrations
 
 ## v1.6.7~rc2 - 2026/01/??
 
